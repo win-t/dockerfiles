@@ -4,17 +4,19 @@ RUN <<EOF
 apk -U add \
   bash \
   bind-tools \
+  busybox-suid \
   conntrack-tools \
   curl \
   htop \
   iproute2 \
   iptables \
   iptables-legacy \
+  iputils \
   openssh-client \
   socat \
-  sudo \
   traceroute \
   util-linux-misc
 
-printf '\n\nALL ALL=NOPASSWD: ALL\n' >> /etc/sudoers
+printf 'root\nroot\n' | passwd
+
 EOF
