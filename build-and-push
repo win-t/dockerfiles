@@ -7,7 +7,14 @@ files=(*/Dockerfile)
 build-and-push() (
   image=$(dirname $1)
   cd "$image"
-  docker buildx build --pull --push --platform linux/amd64,linux/arm64 -t "wint/$image:latest" .
+  docker buildx build \
+    --pull \
+    --cache-from=type=gha \
+    --push \
+    --cache-to=type=gha,mode=max \
+    --platform linux/amd64,linux/arm64 \
+    -t "wint/$image:latest" \
+    .
 )
 
 set -x
