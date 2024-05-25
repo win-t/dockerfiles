@@ -18,6 +18,8 @@ RUN apt-get update \
       /usr/share/man/* \
       /usr/share/local/*
 
+VOLUME /var/lib/tailscale
+
 COPY entrypoint /bin/entrypoint
 
 ENTRYPOINT ["entrypoint"]
