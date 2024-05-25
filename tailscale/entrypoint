@@ -1,0 +1,46 @@
+#!/bin/bash
+
+set -euo pipefail
+
+exec 3>&1
+exec 1>&2
+
+checkiptable_cleanup() {
+  iptables-$1 -D INPUT -j lala >/dev/null 2>&1 || :
+  iptables-$1 -X lala          >/dev/null 2>&1 || :
+}
+
+checkiptable() (
+  trap "checkiptable_cleanup $1" EXIT
+  iptables-$1 -N lala          >/dev/null 2>&1 || exit 1
+  iptables-$1 -A INPUT -j lala >/dev/null 2>&1 || exit 1
+)
+
+working_iptables=
+if checkiptable nft; then
+  working_iptables=iptables-nft
+elif checkiptable legacy; then
+  working_iptables=iptables-legacy
+fi
+
+case "$working_iptables" in
+  iptables-nft)
+    echo "using nft iptables"
+    update-alternatives --set iptables `which iptables-nft` > /dev/null
+    update-alternatives --set ip6tables `which ip6tables-nft` > /dev/null
+    ;;
+  iptables-legacy)
+    echo "using legacy iptables"
+    update-alternatives --set iptables `which iptables-legacy` > /dev/null
+    update-alternatives --set ip6tables `which ip6tables-legacy` > /dev/null
+    ;;
+  *)
+    echo "no working iptables" >&2
+    exit 1
+    ;;
+esac
+
+exec 1>&3
+exec 3>&-
+
+exec tailscaled --no-logs-no-support --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock
