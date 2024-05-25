@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eux
+set -eu
 
 CACHE="${PWD}/.buildx"
 CACHE_NEW="${CACHE}-new"
@@ -11,20 +11,22 @@ build-and-push() (
   image=$(dirname $1)
   cd "$image"
 
+  tag="wint/$image:latest"
+
+  echo ">> building and pushing $tag"
   docker buildx build \
     --pull \
     --push \
     --cache-from=type=local,src="${CACHE}/$image" \
     --cache-to=type=local,dest="${CACHE_NEW}/$image",mode=max \
     --platform linux/amd64,linux/arm64 \
-    -t "wint/$image:latest" \
+    -t "$tag" \
     .
 )
 
 mkdir -p "$CACHE"
 mkdir -p "$CACHE_NEW"
 
-set -x
 for f in "${files[@]}"; do
   build-and-push "$f"
 done
