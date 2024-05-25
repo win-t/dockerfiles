@@ -7,12 +7,7 @@ files=(*/Dockerfile)
 build-and-push() (
   image=$(dirname $1)
   cd "$image"
-
-  docker buildx build --pull --push --platform linux/amd64 -t "wint/$image:amd64-latest" .
-  docker buildx build --pull --push --platform linux/arm64 -t "wint/$image:arm64-latest" .
-
-  docker manifest create "wint/$image:latest" "wint/$image:amd64-latest" "wint/$image:arm64-latest" --amend
-  docker manifest push "wint/$image:latest"
+  docker buildx build --pull --push --platform linux/amd64,linux/arm64 -t "wint/$image:latest" .
 )
 
 set -x
