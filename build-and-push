@@ -13,7 +13,7 @@ build-and-push() (
 
   tag="wint/$image:latest"
 
-  echo ">> building and pushing $tag"
+  echo ">>>>>>>>>>>>>>>>>>>>>>>>>> building and pushing $tag <<<<<<<<<<<<<<<<<<<<<<<<<<"
   docker buildx build \
     --pull \
     --push \
