@@ -13,11 +13,17 @@ build-and-push() (
 
   tag="wint/$image:latest"
 
-  echo ">>>>>>>>>>>>>>>>>>>>>>>>>> building and pushing $tag <<<<<<<<<<<<<<<<<<<<<<<<<<"
+  if [[ $SKIP_CACHE == 'true' ]]; then
+    cachefrom=()
+  else
+    cachefrom=(--cache-from=type=local,src="${CACHE}/$image")
+  fi
+
+  printf '\n\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>> building and pushing %s <<<<<<<<<<<<<<<<<<<<<<<<<<\n' "$tag"
   docker buildx build \
     --pull \
     --push \
-    --cache-from=type=local,src="${CACHE}/$image" \
+    "${cachefrom[@]}" \
     --cache-to=type=local,dest="${CACHE_NEW}/$image",mode=max \
     --platform linux/amd64,linux/arm64 \
     -t "$tag" \

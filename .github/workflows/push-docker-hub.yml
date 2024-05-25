@@ -6,6 +6,11 @@ on:
     - master
   schedule:
   - cron: "17 0 * * *" # every day at midnight jakarta time
+  workflow_dispatch:
+    inputs:
+      skip-cache:
+        type: boolean
+        default: false
 
 jobs:
   build-and-push:
@@ -26,4 +31,6 @@ jobs:
         username: wint
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
     - name: Run build and push script
+      env:
+        SKIP_CACHE: "${{ github.event.inputs.level && 'true' || 'false' }}"
       run: ./build-and-push
