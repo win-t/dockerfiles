@@ -15,14 +15,13 @@ build-and-push() (
 
   echo ">> building and pushing $tag"
   docker buildx build \
-    --load \
+    --pull \
     --push \
     --cache-from=type=local,src="${CACHE}/$image" \
     --cache-to=type=local,dest="${CACHE_NEW}/$image",mode=max \
     --platform linux/amd64,linux/arm64 \
     -t "$tag" \
     .
-  docker push "$tag"
 )
 
 mkdir -p "$CACHE"
