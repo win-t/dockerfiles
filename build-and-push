@@ -17,8 +17,9 @@ build-and-push() (
   docker buildx build \
     --pull \
     --push \
-    --cache-from=type=local,src="${CACHE}/$image" \
-    --cache-to=type=local,dest="${CACHE_NEW}/$image",mode=max \
+    --cache-from=type=local,src="${CACHE}" \
+    --cache-from=type=local,src="${CACHE_NEW}" \
+    --cache-to=type=local,dest="${CACHE_NEW}",mode=max \
     --platform linux/amd64,linux/arm64 \
     -t "$tag" \
     .
