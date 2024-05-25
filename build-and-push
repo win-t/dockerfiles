@@ -2,6 +2,9 @@
 
 set -eux
 
+CACHE="${PWD}/.buildx"
+CACHE_NEW="${CACHE}-new"
+
 files=(*/Dockerfile)
 
 build-and-push() (
@@ -11,21 +14,21 @@ build-and-push() (
   docker buildx build \
     --pull \
     --push \
-    --cache-from=type=local,src=/tmp/.buildx-cache \
-    --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
+    --cache-from=type=local,src="${CACHE}/$image" \
+    --cache-to=type=local,dest="${CACHE_NEW}/$image",mode=max \
     --platform linux/amd64,linux/arm64 \
     -t "wint/$image:latest" \
     .
-
-  # https://github.com/docker/build-push-action/issues/252
-  # https://github.com/moby/buildkit/issues/1896
-  tmp=$RANDOM
-  mv /tmp/.buildx-cache /tmp/.buildx-cache.$tmp
-  ( rm -rf /tmp/.buildx-cache.$tmp & ) # do not wait for deletion to complete
-  mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 )
+
+mkdir -p "$CACHE"
+mkdir -p "$CACHE_NEW"
 
 set -x
 for f in "${files[@]}"; do
   build-and-push "$f"
 done
+
+# https://github.com/moby/buildkit/issues/1896
+mv "$CACHE" "${CACHE}-del" && ( rm -rf "${CACHE}-del" & ) # do not wait for deletion to complete
+mv "$CACHE_NEW" "$CACHE"
