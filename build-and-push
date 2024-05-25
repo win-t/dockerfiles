@@ -9,9 +9,9 @@ build-and-push() (
   cd "$image"
   docker buildx build \
     --pull \
-    --cache-from=type=gha \
     --push \
-    --cache-to=type=gha,mode=max \
+    --cache-from=type=local,src=/tmp/.buildx-cache \
+    --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
     --platform linux/amd64,linux/arm64 \
     -t "wint/$image:latest" \
     .
