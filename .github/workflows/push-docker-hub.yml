@@ -32,5 +32,5 @@ jobs:
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
     - name: Run build and push script
       env:
-        SKIP_CACHE: "${{ github.event.inputs.level && 'true' || 'false' }}"
+        SKIP_CACHE: "${{ github.event.inputs.skip-cache && 'true' || 'false' }}"
       run: ./build-and-push

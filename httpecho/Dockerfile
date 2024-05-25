@@ -1,7 +1,7 @@
 FROM golang:alpine AS builder
 WORKDIR /builder
-RUN GOBIN=$PWD go install go.winto.dev/httpecho@latest
+RUN GOBIN=$PWD CGO_ENABLED=0 go install go.winto.dev/httpecho@latest
 
-FROM alpine
+FROM scratch
 COPY --from=builder /builder/httpecho /server
 ENTRYPOINT ["/server"]
