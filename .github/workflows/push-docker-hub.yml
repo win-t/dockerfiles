@@ -33,4 +33,4 @@ jobs:
     - name: Run build and push script
       env:
         SKIP_CACHE: "${{ github.event.inputs.skip-cache && 'true' || 'false' }}"
-      run: ./build-and-push
+      run: ./build-and-push 2>&1
