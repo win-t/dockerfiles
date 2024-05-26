@@ -26,6 +26,7 @@ build-and-push() (
     "${cachefrom[@]}" \
     --cache-to=type=local,dest="${CACHE_NEW}/$image",mode=max \
     --platform linux/amd64,linux/arm64 \
+    --sbom=false --provenance=false \
     -t "$tag" \
     .
 )
