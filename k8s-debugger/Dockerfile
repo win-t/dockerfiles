@@ -8,12 +8,15 @@ apk -U add \
   conntrack-tools \
   curl \
   htop \
+  iostat \
   iproute2 \
   iptables \
   iptables-legacy \
   iputils \
   openssh-client \
+  procps-ng \
   socat \
+  sysstat \
   traceroute \
   util-linux-misc
 
