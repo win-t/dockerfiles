@@ -8,7 +8,6 @@ apk -U add \
   conntrack-tools \
   curl \
   htop \
-  iostat \
   iproute2 \
   iptables \
   iptables-legacy \
