@@ -1,6 +1,8 @@
 FROM alpine:latest
 
 RUN <<EOF
+set -eu
+
 apk -U add \
   bash \
   bind-tools \
