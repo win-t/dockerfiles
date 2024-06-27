@@ -14,6 +14,7 @@ apk -U add \
   iptables \
   iptables-legacy \
   iputils \
+  jq \
   openssh-client \
   procps-ng \
   socat \
