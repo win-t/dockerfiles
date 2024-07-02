@@ -9,7 +9,9 @@ apk -U add \
   busybox-suid \
   conntrack-tools \
   curl \
+  gawk \
   htop \
+  iftop \
   iotop \
   iproute2 \
   iptables \
@@ -19,6 +21,7 @@ apk -U add \
   lsof \
   openssh-client \
   procps-ng \
+  sed \
   socat \
   sysstat \
   traceroute \
