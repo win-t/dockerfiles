@@ -10,11 +10,13 @@ apk -U add \
   conntrack-tools \
   curl \
   htop \
+  iotop \
   iproute2 \
   iptables \
   iptables-legacy \
   iputils \
   jq \
+  lsof \
   openssh-client \
   procps-ng \
   socat \
