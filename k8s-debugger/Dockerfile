@@ -1,12 +1,14 @@
+FROM alpine:latest AS swuser-builder
+RUN apk add -U curl gcc musl-dev
+WORKDIR /work
+RUN curl -sSLf https://raw.githubusercontent.com/win-t/switch-user/e048cd00269fa9e1fb66f1c633ca4baca980a03c/main.c -o swuser.c \
+ && gcc -o swuser swuser.c
+
+
 FROM alpine:latest
-
-RUN <<EOF
-set -eu
-
-apk -U add \
+RUN apk -U add \
   bash \
   bind-tools \
-  busybox-suid \
   conntrack-tools \
   curl \
   gawk \
@@ -26,7 +28,5 @@ apk -U add \
   sysstat \
   traceroute \
   util-linux-misc
-
-printf 'root\nroot\n' | passwd
-
-EOF
+COPY --from=swuser-builder /work/swuser /usr/local/bin
+RUN chmod u+s /usr/local/bin/swuser
