@@ -7,20 +7,25 @@ CACHE_NEW="${CACHE}-new"
 
 files=(*/Dockerfile)
 
+echo_exec() (
+  echo "$@"
+  exec "$@"
+)
+
 build-and-push() (
   image=$(dirname $1)
   cd "$image"
 
   tag="wint/$image:latest"
 
-  if [[ $SKIP_CACHE == 'true' ]]; then
+  if [[ ${SKIP_CACHE:-} == 'true' ]]; then
     cachefrom=()
   else
     cachefrom=(--cache-from=type=local,src="${CACHE}/$image")
   fi
 
   printf '\n\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>> building and pushing %s <<<<<<<<<<<<<<<<<<<<<<<<<<\n' "$tag"
-  docker buildx build \
+  echo_exec docker buildx build \
     --pull \
     --push \
     "${cachefrom[@]}" \
