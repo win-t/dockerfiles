@@ -1,6 +1,6 @@
 FROM golang:1 AS builder
 ENV GOCACHE=/gocache/build
-ENV GOMODCACHE=/gocache/modWORKDIR /builder
+ENV GOMODCACHE=/gocache/mod
 WORKDIR /builder
 COPY . .
 RUN --mount=type=cache,target=/gocache  go build -o server .
