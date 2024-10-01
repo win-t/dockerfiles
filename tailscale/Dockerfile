@@ -1,7 +1,7 @@
 FROM ubuntu:noble
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends curl ca-certificates iputils-ping dnsutils \
+ && apt-get install -y --no-install-recommends curl ca-certificates iputils-ping dnsutils jq \
  && curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg -o /usr/share/keyrings/tailscale-archive-keyring.gpg \
  && curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list -o /etc/apt/sources.list.d/tailscale.list \
  && apt-get update \
