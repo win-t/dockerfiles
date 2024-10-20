@@ -32,7 +32,6 @@ func main() {
 			cd "$GIT_PROJECT_ROOT"
 			touch git-daemon-export-ok
 			git config http.receivepack true
-			git config http.uploadpack true
 		`).Run()
 	}
 	check(err)
