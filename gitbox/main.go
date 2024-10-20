@@ -3,11 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/cgi"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 )
 
 func main() {
@@ -16,6 +18,8 @@ func main() {
 		fmt.Fprintln(os.Stderr, "GIT_PROJECT_ROOT not set")
 		os.Exit(1)
 	}
+	rootDir, err := filepath.Abs(rootDir)
+	check(err)
 
 	token := os.Getenv("AUTH_TOKEN")
 	if token == "" {
@@ -23,18 +27,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	_, err := os.Stat(filepath.Join(rootDir, "git-daemon-export-ok"))
-	if errors.Is(err, os.ErrNotExist) {
-		fmt.Println("Initializing git repository")
-		err = exec.Command("sh", "-ceu", `
-			mkdir -p "$GIT_PROJECT_ROOT"
-			git init --bare "$GIT_PROJECT_ROOT"
-			cd "$GIT_PROJECT_ROOT"
-			touch git-daemon-export-ok
-			git config http.receivepack true
-		`).Run()
+	if skip, _ := strconv.ParseBool(os.Getenv("SKIP_ROOT_DIR_INIT")); !skip {
+		_, err = os.Stat(filepath.Join(rootDir, "HEAD"))
+		if errors.Is(err, os.ErrNotExist) {
+			err = exec.Command("git", "init", "--bare", rootDir).Run()
+		}
+		check(err)
 	}
-	check(err)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -49,27 +48,40 @@ func main() {
 
 	fmt.Println("Listening on port", port)
 
-	err = http.ListenAndServe(":"+port, authMiddleware(token, &cgi.Handler{
-		Path:       git,
-		Args:       []string{"http-backend"},
-		InheritEnv: []string{"GIT_PROJECT_ROOT"},
-	}))
-	check(err)
-}
-
-func authMiddleware(token string, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if _, reqToken, ok := r.BasicAuth(); !ok || reqToken != token {
+	cgiErr := loggerWriter{log.New(os.Stderr, "git-http-backend: ", 0)}
+	err = http.ListenAndServe(":"+port, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, reqToken, _ := r.BasicAuth()
+		if reqToken != token {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		next.ServeHTTP(w, r)
-	})
+
+		(&cgi.Handler{
+			Path:   git,
+			Args:   []string{"http-backend"},
+			Dir:    rootDir,
+			Stderr: cgiErr,
+			Env: []string{
+				"GIT_PROJECT_ROOT=" + rootDir,
+				"GIT_HTTP_EXPORT_ALL=yes",
+				"REMOTE_USER=" + user,
+			},
+			Logger: cgiErr.Logger,
+		}).ServeHTTP(w, r)
+	}))
+	check(err)
 }
 
 func check(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+type loggerWriter struct{ *log.Logger }
+
+func (s loggerWriter) Write(p []byte) (n int, err error) {
+	s.Logger.Print(string(p))
+	return len(p), nil
 }
