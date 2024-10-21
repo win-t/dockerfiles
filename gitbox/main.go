@@ -46,10 +46,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("Listening on port", port)
-
 	cgiErr := loggerWriter{log.New(os.Stderr, "git-http-backend: ", 0)}
-	err = http.ListenAndServe(":"+port, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user, reqToken, _ := r.BasicAuth()
 		if reqToken != token {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
@@ -69,7 +67,17 @@ func main() {
 			},
 			Logger: cgiErr.Logger,
 		}).ServeHTTP(w, r)
-	}))
+	})
+
+	fmt.Println("Listening on port", port)
+
+	cert := os.Getenv("TLS_CERT")
+	key := os.Getenv("TLS_KEY")
+	if cert == "" || key == "" {
+		err = http.ListenAndServe(":"+port, handler)
+	} else {
+		err = http.ListenAndServeTLS(":"+port, cert, key, handler)
+	}
 	check(err)
 }
 
