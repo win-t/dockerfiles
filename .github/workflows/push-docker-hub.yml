@@ -20,7 +20,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: .buildx
-        key: buildx-${{ github.sha }}
+        key: buildx-${{ github.run_id }}
         restore-keys: buildx-
     - uses: docker/setup-qemu-action@v3
     - uses: docker/setup-buildx-action@v3
