@@ -18,7 +18,7 @@ build-and-push() (
 
   tag="wint/$image:latest"
 
-  if [[ ${SKIP_CACHE:-} == 'true' ]]; then
+  if [[ ",$SKIP_CACHE," = *",$image,"* ]] || [[ "$SKIP_CACHE" = "all" ]]; then
     cachefrom=()
   else
     cachefrom=(--cache-from=type=local,src="${CACHE}/$image")
