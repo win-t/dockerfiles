@@ -6,6 +6,6 @@ COPY . .
 RUN --mount=type=cache,target=/gocache  go build -o server .
 
 FROM ubuntu:latest
-RUN apt update && apt install -y curl bind9-dnsutils iproute2 iputils-ping netcat busybox
+RUN apt update && apt install -y curl bind9-dnsutils iproute2 iputils-ping netcat-openbsd busybox
 COPY --from=builder /builder/server /bin/server
 ENTRYPOINT ["server"]
