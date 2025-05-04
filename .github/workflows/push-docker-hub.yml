@@ -5,7 +5,7 @@ on:
     branches:
     - master
   schedule:
-  - cron: "17 0 * * *" # every day at midnight jakarta time
+  - cron: "0 17 * * 0" # every day at midnight jakarta time
   workflow_dispatch:
     inputs:
       skip-cache:
