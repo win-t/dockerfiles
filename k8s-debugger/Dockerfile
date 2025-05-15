@@ -1,10 +1,11 @@
-FROM alpine:latest AS swuser-builder
+FROM alpine:latest AS extra
 RUN apk add -U curl gcc musl-dev
 WORKDIR /work
-RUN curl -sSLf https://raw.githubusercontent.com/win-t/switch-user/refs/heads/master/main.c -o swuser.c \
- && gcc -o swuser swuser.c
-
-FROM wint/pid1 AS pid1
+RUN curl -sSLf -o swuser.c      https://raw.githubusercontent.com/win-t/switch-user/refs/heads/master/main.c \
+ && curl -sSLf -o docker_pid1.c https://raw.githubusercontent.com/win-t/docker_pid1/refs/heads/master/main.c \
+ && mkdir output \
+ && gcc -std=c11 -Os -Wall -Wextra -Wpedantic -Werror -o output/swuser      swuser.c \
+ && gcc -std=c11 -Os -Wall -Wextra -Wpedantic -Werror -o output/docker_pid1 docker_pid1.c
 
 FROM alpine:latest
 RUN apk -U add \
@@ -30,6 +31,5 @@ RUN apk -U add \
   tcpdump \
   traceroute \
   util-linux-misc
-COPY --from=swuser-builder /work/swuser /usr/local/bin
+COPY --from=extra /work/output /usr/local/bin
 RUN chmod u+s /usr/local/bin/swuser
-COPY --from=pid1 /docker_pid1 /usr/local/bin/docker_pid1
