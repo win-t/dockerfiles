@@ -1,7 +1,7 @@
 FROM alpine:latest AS swuser-builder
 RUN apk add -U curl gcc musl-dev
 WORKDIR /work
-RUN curl -sSLf https://raw.githubusercontent.com/win-t/switch-user/e048cd00269fa9e1fb66f1c633ca4baca980a03c/main.c -o swuser.c \
+RUN curl -sSLf https://raw.githubusercontent.com/win-t/switch-user/refs/heads/master/main.c -o swuser.c \
  && gcc -o swuser swuser.c
 
 FROM wint/pid1 AS pid1
