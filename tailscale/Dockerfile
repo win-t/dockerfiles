@@ -1,5 +1,6 @@
 FROM ubuntu:latest
 
+SHELL [ "/bin/bash", "-ceux", "-o", "pipefail" ]
 RUN <<EOR
   version=$( . /etc/os-release && echo $VERSION_CODENAME )
   apt-get update
