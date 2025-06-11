@@ -3,11 +3,13 @@ FROM ubuntu:latest
 SHELL [ "/bin/bash", "-ceux", "-o", "pipefail" ]
 RUN <<EOR
   version=$( . /etc/os-release && echo $VERSION_CODENAME )
+  export DEBIAN_FRONTEND=noninteractive
   apt-get update
   apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     dnsutils \
+    iproute2 \
     iputils-ping \
     jq \
     tcpdump
