@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 FROM golang
 
 ENV GOCACHE=/cache/go-build

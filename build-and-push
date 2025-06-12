@@ -9,6 +9,8 @@ echo_exec() (
   exec "$@"
 )
 
+gha_cache="url_v2=$ACTIONS_RESULTS_URL,token=$ACTIONS_RUNTIME_TOKEN"
+
 build-and-push() (
   image=$(dirname $1)
   cd "$image"
@@ -16,17 +18,17 @@ build-and-push() (
   tag="wint/$image:latest"
 
   if [[ ",$SKIP_CACHE," = *",$image,"* ]] || [[ "$SKIP_CACHE" = "all" ]]; then
-    nocache_opts=()
-  else
     nocache_opts=(--no-cache)
+  else
+    nocache_opts=()
   fi
 
   printf '\n\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>> building and pushing %s <<<<<<<<<<<<<<<<<<<<<<<<<<\n' "$tag"
   echo_exec docker buildx build \
     --pull \
     --push \
-    "--cache-from=type=gha,scope=$image,url_v2=$ACTIONS_RESULTS_URL,token=$ACTIONS_RUNTIME_TOKEN" \
-    "--cache-to=type=gha,mode=max,scope=$image,url_v2=$ACTIONS_RESULTS_URL,token=$ACTIONS_RUNTIME_TOKEN" \
+    "--cache-from=type=gha,scope=$image,$gha_cache" \
+    "--cache-to=type=gha,mode=max,scope=$image,$gha_cache" \
     "${nocache_opts[@]}" \
     --platform linux/amd64,linux/arm64 \
     --sbom=false --provenance=false \

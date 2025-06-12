@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 FROM ubuntu:latest
 
 SHELL [ "/bin/bash", "-ceux", "-o", "pipefail" ]

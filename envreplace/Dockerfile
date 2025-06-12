@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 FROM golang:alpine AS builder
 ENV GOCACHE=/gocache/build
 ENV GOMODCACHE=/gocache/mod

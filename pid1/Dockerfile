@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 FROM alpine AS builder
 WORKDIR /data
 RUN apk -U add gcc musl-dev curl
