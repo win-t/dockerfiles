@@ -37,5 +37,7 @@ build-and-push() (
 )
 
 for f in "${files[@]}"; do
+  echo "::group::build-and-push \"$f\""
   build-and-push "$f"
+  echo "::endgroup::"
 done
