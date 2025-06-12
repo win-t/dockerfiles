@@ -2,9 +2,6 @@
 
 set -eu
 
-CACHE="${PWD}/.buildx"
-CACHE_NEW="${CACHE}-new"
-
 files=(*/Dockerfile)
 
 echo_exec() (
@@ -19,30 +16,24 @@ build-and-push() (
   tag="wint/$image:latest"
 
   if [[ ",$SKIP_CACHE," = *",$image,"* ]] || [[ "$SKIP_CACHE" = "all" ]]; then
-    cachefrom=()
+    nocache_opts=()
   else
-    cachefrom=(--cache-from=type=local,src="${CACHE}/$image")
+    nocache_opts=(--no-cache)
   fi
 
   printf '\n\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>> building and pushing %s <<<<<<<<<<<<<<<<<<<<<<<<<<\n' "$tag"
   echo_exec docker buildx build \
     --pull \
     --push \
-    "${cachefrom[@]}" \
-    --cache-to=type=local,dest="${CACHE_NEW}/$image",mode=max \
+    "--cache-from=type=gha,scope=$image,url_v2=$ACTIONS_RESULTS_URL,token=$ACTIONS_RUNTIME_TOKEN" \
+    "--cache-to=type=gha,mode=max,scope=$image,url_v2=$ACTIONS_RESULTS_URL,token=$ACTIONS_RUNTIME_TOKEN" \
+    "${nocache_opts[@]}" \
     --platform linux/amd64,linux/arm64 \
     --sbom=false --provenance=false \
     -t "$tag" \
     .
 )
 
-mkdir -p "$CACHE"
-mkdir -p "$CACHE_NEW"
-
 for f in "${files[@]}"; do
   build-and-push "$f"
 done
-
-# https://github.com/moby/buildkit/issues/1896
-mv "$CACHE" "${CACHE}-del" && ( rm -rf "${CACHE}-del" & ) # do not wait for deletion to complete
-mv "$CACHE_NEW" "$CACHE"
