@@ -23,7 +23,8 @@ build-and-push() (
     nocache_opts=()
   fi
 
-  printf '\n\n\n\n>>>>>>>>>>>>>>>>>>>>>>>>>> building and pushing %s <<<<<<<<<<<<<<<<<<<<<<<<<<\n' "$tag"
+  echo "::group::$tag"
+  printf '>>>>>>>>>>>>>>>>>>>>>>>>>> building and pushing %s <<<<<<<<<<<<<<<<<<<<<<<<<<\n' "$tag"
   echo_exec docker buildx build \
     --pull \
     --push \
@@ -34,10 +35,9 @@ build-and-push() (
     --sbom=false --provenance=false \
     -t "$tag" \
     .
+  echo "::endgroup::"
 )
 
 for f in "${files[@]}"; do
-  echo "::group::build-and-push \"$f\""
   build-and-push "$f"
-  echo "::endgroup::"
 done

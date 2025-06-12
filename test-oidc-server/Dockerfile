@@ -8,5 +8,5 @@ RUN --mount=type=cache,target=/gocache GOBIN=$PWD CGO_ENABLED=0 go install go.wi
 
 FROM scratch
 COPY --from=builder /builder/test-oidc-server /server
-ENV KEY=/data/key.pem
+ENV KEYFILE=/data/key.pem
 ENTRYPOINT ["/server"]
