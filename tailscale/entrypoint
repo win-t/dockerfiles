@@ -84,5 +84,5 @@ exec tailscaled \
   --no-logs-no-support \
   --statedir=/var/lib/tailscale \
   --socket=/run/tailscale/tailscaled.sock \
-  --port 443 \
+  --port "${TS_PORT:-443}" \
   $NET_OPTS $PROXY_OPTS $STATE_OPTS
