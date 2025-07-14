@@ -25,3 +25,5 @@ RUN apk -U add \
   util-linux-misc
 COPY --from=extra /work/output /usr/local/bin
 RUN chmod u+s /usr/local/bin/swuser
+
+ENTRYPOINT [ "docker_pid1" ]
