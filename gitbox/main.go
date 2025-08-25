@@ -21,16 +21,18 @@ func main() {
 	rootDir, err := filepath.Abs(rootDir)
 	check(err)
 
-	token := os.Getenv("AUTH_TOKEN")
-	if token == "" {
-		fmt.Fprintln(os.Stderr, "AUTH_TOKEN not set")
+	git, err := exec.LookPath("git")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "git not found", err)
 		os.Exit(1)
 	}
+
+	token := os.Getenv("AUTH_TOKEN")
 
 	if skip, _ := strconv.ParseBool(os.Getenv("SKIP_ROOT_DIR_INIT")); !skip {
 		_, err = os.Stat(filepath.Join(rootDir, "HEAD"))
 		if errors.Is(err, os.ErrNotExist) {
-			err = exec.Command("git", "init", "--bare", rootDir).Run()
+			err = exec.Command(git, "init", "--bare", rootDir).Run()
 		}
 		check(err)
 	}
@@ -40,19 +42,17 @@ func main() {
 		port = "8080"
 	}
 
-	git, err := exec.LookPath("git")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "git not found", err)
-		os.Exit(1)
-	}
-
-	cgiErr := loggerWriter{log.New(os.Stderr, "git-http-backend: ", 0)}
+	cgiErr := loggerWriter{log.New(os.Stderr, "git-http-backend: ", log.LstdFlags|log.Lmicroseconds)}
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, reqToken, _ := r.BasicAuth()
-		if reqToken != token {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
+		user := "git"
+		if token != "" {
+			var reqToken string
+			user, reqToken, _ = r.BasicAuth()
+			if reqToken != token {
+				w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
 		}
 
 		(&cgi.Handler{
@@ -63,6 +63,7 @@ func main() {
 			Env: []string{
 				"GIT_PROJECT_ROOT=" + rootDir,
 				"GIT_HTTP_EXPORT_ALL=yes",
+				"GIT_HTTP_MAX_REQUEST_BUFFER=256M",
 				"REMOTE_USER=" + user,
 			},
 			Logger: cgiErr.Logger,
