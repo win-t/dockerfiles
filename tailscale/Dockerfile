@@ -25,6 +25,7 @@ EOR
 
 VOLUME /var/lib/tailscale
 
-COPY entrypoint /bin/entrypoint
+COPY --from=wint/pid1 /docker_pid1 /usr/local/bin/docker_pid1
+COPY entrypoint /entrypoint
 
-ENTRYPOINT ["entrypoint"]
+ENTRYPOINT ["docker_pid1", "/entrypoint"]
