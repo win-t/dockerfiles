@@ -7,11 +7,11 @@ exec 1>&2
 
 if [[ ${USERSPACE_NET:-} == 'true' ]]; then
   NET_OPTS='--tun=userspace-networking'
-  PROXY_OPTS='--socks5-server=127.0.0.1:1055 --outbound-http-proxy-listen=127.0.0.1:8080'
+  PROXY_OPTS="--socks5-server=127.0.0.1:${TS_SOCK_PROXY_PORT:-1055} --outbound-http-proxy-listen=127.0.0.1:${TS_HTTP_PROXY_PORT:-8080}"
 
 else
   NET_OPTS=''
-  PROXY_OPTS='--socks5-server=0.0.0.0:1055 --outbound-http-proxy-listen=0.0.0.0:8080'
+  PROXY_OPTS="--socks5-server=0.0.0.0:${TS_SOCK_PROXY_PORT:-1055} --outbound-http-proxy-listen=0.0.0.0:${TS_HTTP_PROXY_PORT:-8080}"
 
   checkiptable_cleanup() {
     iptables-$1 -D INPUT -j lala >/dev/null 2>&1 || :
