@@ -16,6 +16,7 @@ build-and-push() (
   cd "$image"
 
   tag="wint/$image:latest"
+  tag2="wint/$image:$(git rev-parse --short HEAD)"
 
   if [[ ",$SKIP_CACHE," = *",$image,"* ]] || [[ "$SKIP_CACHE" = "all" ]]; then
     nocache_opts=(--no-cache)
@@ -34,6 +35,7 @@ build-and-push() (
     --platform linux/amd64,linux/arm64 \
     --sbom=false --provenance=false \
     -t "$tag" \
+    -t "$tag2" \
     .
   echo "::endgroup::"
 )
