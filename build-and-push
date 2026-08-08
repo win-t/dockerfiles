@@ -11,12 +11,14 @@ echo_exec() (
 
 gha_cache="url_v2=$ACTIONS_RESULTS_URL,token=$ACTIONS_RUNTIME_TOKEN"
 
+now=$(date --utc +%s)
+
 build-and-push() (
   image=$(dirname $1)
   cd "$image"
 
   tag="wint/$image:latest"
-  tag2="wint/$image:$(git rev-parse --short HEAD)"
+  tag2="wint/$image:$now"
 
   if [[ ",$SKIP_CACHE," = *",$image,"* ]] || [[ "$SKIP_CACHE" = "all" ]]; then
     nocache_opts=(--no-cache)
