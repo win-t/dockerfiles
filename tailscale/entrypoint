@@ -62,7 +62,7 @@ fi
 if [[ -n ${K8S_STATE:-} ]]; then
   STATE_OPTS="--state=kube:$K8S_STATE"
 else
-  STATE_OPTS="--state=/var/lib/tailscale/tailscaled.state"
+  STATE_OPTS="--state=${TS_STATE_DIR:-/var/lib/tailscale}/tailscaled.state"
 fi
 
 exec 1>&3
@@ -82,7 +82,7 @@ fi
 
 exec tailscaled \
   --no-logs-no-support \
-  --statedir=/var/lib/tailscale \
+  --statedir=${TS_STATE_DIR:-/var/lib/tailscale} \
   --socket=/run/tailscale/tailscaled.sock \
   --port "${TS_PORT:-443}" \
   $NET_OPTS $PROXY_OPTS $STATE_OPTS
