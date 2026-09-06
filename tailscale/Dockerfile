@@ -1,5 +1,9 @@
 # syntax=docker/dockerfile:1
 
+FROM golang AS derper-build
+WORKDIR /build
+RUN GOBIN=$PWD go install tailscale.com/cmd/derper@latest
+
 FROM ubuntu:latest
 
 SHELL [ "/bin/bash", "-ceux", "-o", "pipefail" ]
@@ -22,6 +26,7 @@ RUN <<EOR
   apt-get clean -y
   rm -rf /var/lib/apt/lists/*
 EOR
+COPY --from=derper-build /build/derper /usr/local/bin/derper
 
 VOLUME /var/lib/tailscale
 

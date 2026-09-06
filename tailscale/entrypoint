@@ -5,16 +5,9 @@ set -euo pipefail
 exec 3>&1
 exec 1>&2
 
-if [[ ${USERSPACE_NET:-} == 'true' ]]; then
-  NET_OPTS='--tun=userspace-networking'
-  PROXY_LISTEN=${PROXY_LISTEN:-127.0.0.1}
-  PROXY_OPTS="--socks5-server=${PROXY_LISTEN}:${TS_SOCK_PROXY_PORT:-1055} --outbound-http-proxy-listen=${PROXY_LISTEN}:${TS_HTTP_PROXY_PORT:-8080}"
+NET_OPTS=''
 
-else
-  NET_OPTS=''
-  PROXY_LISTEN=${PROXY_LISTEN:-0.0.0.0}
-  PROXY_OPTS="--socks5-server=${PROXY_LISTEN}:${TS_SOCK_PROXY_PORT:-1055} --outbound-http-proxy-listen=${PROXY_LISTEN}:${TS_HTTP_PROXY_PORT:-8080}"
-
+if [[ ${USERSPACE_NET:-} != 'true' ]]; then
   checkiptable_cleanup() {
     iptables-$1 -D INPUT -j lala >/dev/null 2>&1 || :
     iptables-$1 -X lala          >/dev/null 2>&1 || :
@@ -26,29 +19,18 @@ else
     iptables-$1 -A INPUT -j lala >/dev/null 2>&1 || exit 1
   )
 
-  working_iptables=
   if checkiptable nft; then
-    working_iptables=iptables-nft
+    echo "using nft iptables"
+    update-alternatives --set iptables `which iptables-nft` > /dev/null
+    update-alternatives --set ip6tables `which ip6tables-nft` > /dev/null
   elif checkiptable legacy; then
-    working_iptables=iptables-legacy
+    echo "using legacy iptables"
+    update-alternatives --set iptables `which iptables-legacy` > /dev/null
+    update-alternatives --set ip6tables `which ip6tables-legacy` > /dev/null
+  else
+    echo "no working iptables" >&2
+    exit 1
   fi
-
-  case "$working_iptables" in
-    iptables-nft)
-      echo "using nft iptables"
-      update-alternatives --set iptables `which iptables-nft` > /dev/null
-      update-alternatives --set ip6tables `which ip6tables-nft` > /dev/null
-      ;;
-    iptables-legacy)
-      echo "using legacy iptables"
-      update-alternatives --set iptables `which iptables-legacy` > /dev/null
-      update-alternatives --set ip6tables `which ip6tables-legacy` > /dev/null
-      ;;
-    *)
-      echo "no working iptables" >&2
-      exit 1
-      ;;
-  esac
 
   if [[ ! -c /dev/net/tun ]]; then
     mkdir -p /dev/net
@@ -59,6 +41,8 @@ else
   iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
   iptables -A INPUT -i lo -j ACCEPT
   iptables -A INPUT -p udp -m udp --dport "${TS_PORT:-443}" -j ACCEPT
+else
+  NET_OPTS='--tun=userspace-networking'
 fi
 
 if [[ -n ${K8S_STATE:-} ]]; then
@@ -82,9 +66,20 @@ if [[ -n ${TS_AUTHKEY:-} ]]; then
   ) & )
 fi
 
+if [[ -n ${TS_DERPER:-} ]]; then
+ ( (
+   while sleep 1; do
+    derper -home blank -hostname "${TS_DERPER}" -verify-clients
+   done
+ ) & )
+fi
+
+PROXY_LISTEN=${PROXY_LISTEN:-127.0.0.1}
+PROXY_OPTS="--socks5-server=${PROXY_LISTEN}:${TS_SOCK_PROXY_PORT:-1055} --outbound-http-proxy-listen=${PROXY_LISTEN}:${TS_HTTP_PROXY_PORT:-8080}"
+
 exec tailscaled \
   --no-logs-no-support \
   --statedir=${TS_STATE_DIR:-/var/lib/tailscale} \
-  --socket=/run/tailscale/tailscaled.sock \
+  --socket=${TS_RUN_DIR:-/run/tailscale}/tailscaled.sock \
   --port "${TS_PORT:-443}" \
   $NET_OPTS $PROXY_OPTS $STATE_OPTS
