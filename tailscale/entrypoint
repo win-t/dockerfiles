@@ -41,16 +41,16 @@ if [[ ${USERSPACE_NET:-} != 'true' ]]; then
   iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
   iptables -A INPUT -i lo -j ACCEPT
 
-  # tailscaled
   iptables -A INPUT -p udp -m udp --dport "${TS_PORT:-443}" -j ACCEPT
   if [[ -n ${TS_RELAY_PORT:-} ]]; then
     iptables -A INPUT -p udp -m udp --dport "${TS_RELAY_PORT}" -j ACCEPT
   fi
 
-  # derper
-  iptables -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
-  iptables -A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
-  iptables -A INPUT -p udp -m udp --dport 3478 -j ACCEPT
+  if [[ -n ${TS_DERPER:-} ]]; then
+    iptables -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+    iptables -A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+    iptables -A INPUT -p udp -m udp --dport 3478 -j ACCEPT
+  fi
 
   PROXY_LISTEN=${PROXY_LISTEN:-0.0.0.0}
 else
