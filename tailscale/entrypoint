@@ -40,9 +40,22 @@ if [[ ${USERSPACE_NET:-} != 'true' ]]; then
   iptables -P INPUT DROP
   iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
   iptables -A INPUT -i lo -j ACCEPT
+
+  # tailscaled
   iptables -A INPUT -p udp -m udp --dport "${TS_PORT:-443}" -j ACCEPT
+  if [[ -n ${TS_RELAY_PORT:-} ]]; then
+    iptables -A INPUT -p udp -m udp --dport "${TS_RELAY_PORT}" -j ACCEPT
+  fi
+
+  # derper
+  iptables -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+  iptables -A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+  iptables -A INPUT -p udp -m udp --dport 3478 -j ACCEPT
+
+  PROXY_LISTEN=${PROXY_LISTEN:-0.0.0.0}
 else
   NET_OPTS='--tun=userspace-networking'
+  PROXY_LISTEN=${PROXY_LISTEN:-127.0.0.1}
 fi
 
 if [[ -n ${K8S_STATE:-} ]]; then
@@ -74,7 +87,12 @@ if [[ -n ${TS_DERPER:-} ]]; then
  ) & )
 fi
 
-PROXY_LISTEN=${PROXY_LISTEN:-127.0.0.1}
+if [[ -n ${EXTRA_INIT:-} ]]; then
+ ( (
+   exec "${EXTRA_INIT}"
+ ) & )
+fi
+
 PROXY_OPTS="--socks5-server=${PROXY_LISTEN}:${TS_SOCK_PROXY_PORT:-1055} --outbound-http-proxy-listen=${PROXY_LISTEN}:${TS_HTTP_PROXY_PORT:-8080}"
 
 exec tailscaled \
