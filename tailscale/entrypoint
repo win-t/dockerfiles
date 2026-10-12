@@ -38,7 +38,9 @@ if [[ ${USERSPACE_NET:-} != 'true' ]]; then
   fi
 
   iptables -P INPUT DROP
+  iptables -P FORWARD DROP
   iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+  iptables -A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
   iptables -A INPUT -i lo -j ACCEPT
 
   iptables -A INPUT -p udp -m udp --dport "${TS_PORT:-443}" -j ACCEPT
