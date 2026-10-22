@@ -12,7 +12,8 @@ RUN --mount=type=cache,target=/cache \
 FROM alpine
 RUN apk -U add git-daemon
 COPY --from=builder /out/server /server
+COPY --from=wint/pid1 /docker_pid1 /usr/local/bin/docker_pid1
 WORKDIR /data
 VOLUME /data
 ENV GIT_PROJECT_ROOT=/data
-ENTRYPOINT ["/server"]
+ENTRYPOINT ["docker_pid1", "/server"]
