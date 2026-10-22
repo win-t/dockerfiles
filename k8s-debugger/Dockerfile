@@ -28,6 +28,7 @@ apk -U add \
   iputils \
   jq \
   procps-ng \
+  socat \
   sysstat \
   tmux \
   traceroute \
