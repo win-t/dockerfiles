@@ -32,7 +32,7 @@ func main() {
 	if skip, _ := strconv.ParseBool(os.Getenv("SKIP_ROOT_DIR_INIT")); !skip {
 		_, err = os.Stat(filepath.Join(rootDir, "HEAD"))
 		if errors.Is(err, os.ErrNotExist) {
-			err = exec.Command(git, "init", "--bare", rootDir).Run()
+			err = exec.Command(git, "init", "--bare", "--initial-branch=main", rootDir).Run()
 		}
 		check(err)
 	}
